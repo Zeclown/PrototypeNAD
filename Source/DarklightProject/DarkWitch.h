@@ -6,20 +6,20 @@
 #include "DarkWitch.generated.h"
 
 /**
- * 
+ * Class for the shadow clone, takes in the input and send them to LightWitch if necessary
  */
 UCLASS()
 class DARKLIGHTPROJECT_API ADarkWitch : public ADarklightProjectCharacter
 {
 	GENERATED_BODY()
 protected:
-	/**Tick event called by the blueprint */
 	void Tick(float deltaTime);
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 	void BeginPlay();
 	//The light counterpart so we can set its inputs
-	ADarklightProjectCharacter* LightCharacter;
+
 public:
 	ADarkWitch();
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
+	ADarklightProjectCharacter* LightCharacter;
 };

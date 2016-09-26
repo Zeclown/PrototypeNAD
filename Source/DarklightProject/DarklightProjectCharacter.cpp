@@ -102,7 +102,6 @@ void ADarklightProjectCharacter::MoveForward(float Value)
 void ADarklightProjectCharacter::MoveRight(float Value)
 {
 	// add movement in that direction
-	
 	AddMovementInput(FVector(-1.f, 0.f, 0.f), Value);
 }
 

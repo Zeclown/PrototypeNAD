@@ -10,17 +10,19 @@ ADarkWitch::ADarkWitch()
 }
 void ADarkWitch::SetupPlayerInputComponent(UInputComponent * InputComponent)
 {
+	for (TObjectIterator<ALightWitch> Itr; Itr; ++Itr)
+	{
+		// Filter out objects not contained in the target world.
+		if (Itr->GetWorld() != GetWorld())
+		{
+			LightCharacter = *Itr;
+		}
+		// Do stuff
+	}
 	//////////////////////////////////////////////////////////////////////////
 	// Input
 	// Set up gameplay key bindings
 	/////////////////////////////////////////////////////////////////////////
-	if (LightCharacter)
-	{
-		InputComponent->BindAction("Jump", IE_Pressed, LightCharacter, &ACharacter::Jump);
-		InputComponent->BindAction("Jump", IE_Released, LightCharacter, &ACharacter::StopJumping);
-		InputComponent->BindAxis("MoveRight", LightCharacter, &ADarklightProjectCharacter::MoveRight);
-		InputComponent->BindAxis("MoveForward", LightCharacter, &ADarklightProjectCharacter::MoveForward);
-	}
 	InputComponent->BindAction("JumpShadow", IE_Pressed, this, &ACharacter::Jump);
 	InputComponent->BindAction("JumpShadow", IE_Released, this, &ACharacter::StopJumping);
 	InputComponent->BindAxis("MoveRightShadow", this, &ADarklightProjectCharacter::MoveRight);
@@ -31,15 +33,7 @@ void ADarkWitch::SetupPlayerInputComponent(UInputComponent * InputComponent)
 void ADarkWitch::BeginPlay()
 {
 	Super::BeginPlay();
-	for (TObjectIterator<ALightWitch> Itr; Itr; ++Itr)
-	{
-		// Filter out objects not contained in the target world.
-		if (Itr->GetWorld() != GetWorld())
-		{
-			LightCharacter = *Itr;
-		}
-		// Do stuff
-	}
+
 }
 
 void ADarkWitch::Tick(float DeltaTime)
