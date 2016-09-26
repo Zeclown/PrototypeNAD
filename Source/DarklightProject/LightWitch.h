@@ -17,6 +17,7 @@ protected:
 	/**Tick event called by the blueprint */
 	void Tick(float DeltaTime);
 	void BeginPlay();
+	const float LIGHT_TRESHOLD = 100;
 public:
 	ALightWitch();
 	

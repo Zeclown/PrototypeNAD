@@ -39,7 +39,6 @@ void ADarkWitch::BeginPlay()
 void ADarkWitch::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	bool InDanger = false;
 	float Damage = 0;
 	for (auto& light : Lights)
 	{
@@ -48,23 +47,19 @@ void ADarkWitch::Tick(float DeltaTime)
 			USpotLightComponent* LightComp = Cast<USpotLightComponent>(light->GetComponentByClass(USpotLightComponent::StaticClass()));
 			float Potency=EvaluateLightPotency(LightComp);
 			float DistanceFromLight = (GetActorLocation() - LightComp->GetOwner()->GetActorLocation()).Size();
-			Damage = KillingRatio*DeltaTime*Potency / DistanceFromLight * 100;
-			if(Damage>0)
-				InDanger = true;							
+			Damage += KillingRatio*Potency / DistanceFromLight * 100;						
 		}
 		else if (light->GetComponentByClass(UPointLightComponent::StaticClass())) // it is a point light
 		{
 			UPointLightComponent* LightComp = Cast<UPointLightComponent>(light->GetComponentByClass(UPointLightComponent::StaticClass()));
 			float Potency = EvaluateLightPotency(LightComp);
 			float DistanceFromLight = (GetActorLocation() - LightComp->GetOwner()->GetActorLocation()).Size();
-			Damage = KillingRatio*DeltaTime*Potency / DistanceFromLight * 100;
-			if (Damage>0)
-				InDanger = true;
+			Damage += KillingRatio*Potency / DistanceFromLight * 100;
 		}
 	}
 
-	Health -= Damage;
-	if (!InDanger)
+	Health -= Damage*DeltaTime;
+	if (Damage<=0)
 	{
 		Health = MaxHealth;
 		bIsInShadows = true;
