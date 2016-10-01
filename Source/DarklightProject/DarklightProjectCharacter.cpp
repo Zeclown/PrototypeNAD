@@ -7,7 +7,6 @@ ADarklightProjectCharacter::ADarklightProjectCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-
 	// Don't rotate when the controller rotates.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -23,18 +22,32 @@ ADarklightProjectCharacter::ADarklightProjectCharacter()
 	GetCharacterMovement()->MaxFlySpeed = 600.f;
 	MaxHealth = 100;
 	CurrentSlow = 0;
+	MaxSlow = 0.1f;
+	bIsInShadows = false;
 	PrimaryActorTick.bCanEverTick = true;
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 
 }
 
+void ADarklightProjectCharacter::PostInitProperties()
+{
+	Super::PostInitProperties();
+	Health = MaxHealth;
+	InitialWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
 
+}
+#if WITH_EDITOR
+void ADarklightProjectCharacter::PostEditChangeProperty(FPropertyChangedEvent & PropertyChangedEvent)
+{
+	Health = MaxHealth;
+	InitialWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+}
+#endif
 void ADarklightProjectCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	bIsInShadows = false;
-	Health = MaxHealth;
 	for (TObjectIterator<ULightComponent> Itr; Itr; ++Itr)
 	{
 		// Filter out objects not contained in the target world.
@@ -46,7 +59,6 @@ void ADarklightProjectCharacter::BeginPlay()
 				UE_LOG(LogTemp, Warning, TEXT("Adding as damaging light Actor:%s"), *Itr->GetOwner()->GetName());
 			}
 		}
-		// Do stuff
 	}
 }
 void ADarklightProjectCharacter::SetupPlayerInputComponent(class UInputComponent* InputComponent)
@@ -56,18 +68,25 @@ void ADarklightProjectCharacter::SetupPlayerInputComponent(class UInputComponent
 void ADarklightProjectCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	Health = FMath::Clamp(Health, 0.0f, MaxHealth);
+	LightExposition = 0;
+	FeetCoordinates = GetActorLocation() - FVector(0, 0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+	ProcessLightStatus();
+	GetCharacterMovement()->MaxWalkSpeed = FMath::Lerp(InitialWalkSpeed*MaxSlow, InitialWalkSpeed, Health / MaxHealth);
 }
 float ADarklightProjectCharacter::EvaluateLightPotency(USpotLightComponent * LightComp)
 {
 		
-	float DistanceFromLight = (GetActorLocation() - LightComp->GetOwner()->GetActorLocation()).Size();
+	float DistanceFromLight = (FeetCoordinates - LightComp->GetOwner()->GetActorLocation()).Size();
 	float LightPotency = 0;
 	if (LightComp->AttenuationRadius*0.9f > DistanceFromLight)
 	{
 		FHitResult LightHitData;
 		float Exposition;
-		bool bInsideCone = FMath::GetDistanceWithinConeSegment(GetActorLocation(), LightComp->GetOwner()->GetActorLocation(), LightComp->AttenuationRadius*LightComp->GetOwner()->GetActorForwardVector(), 0, LightComp->OuterConeAngle, Exposition);
-		if (bInsideCone && !GetWorld()->LineTraceSingleByChannel(LightHitData, GetActorLocation(), LightComp->GetOwner()->GetActorLocation(), ECC_Visibility))
+		FVector ConeLine = LightComp->AttenuationRadius * LightComp->GetForwardVector();
+		float RadiusAtEnd = FMath::Tan(FMath::DegreesToRadians(LightComp->OuterConeAngle)) * ConeLine.Size();
+		bool bInsideCone = FMath::GetDistanceWithinConeSegment(FeetCoordinates, LightComp->GetComponentLocation(), ConeLine, 0, RadiusAtEnd, Exposition);
+		if (bInsideCone && !GetWorld()->LineTraceSingleByChannel(LightHitData, FeetCoordinates, LightComp->GetComponentLocation(), ECC_Visibility))
 		{
 			//We calculate the light potency, which is stronger if the light is concentrated (small radius, big intensity) and vice versa
 			LightPotency = LightComp->Intensity / LightComp->AttenuationRadius;
@@ -79,17 +98,37 @@ float ADarklightProjectCharacter::EvaluateLightPotency(USpotLightComponent * Lig
 float ADarklightProjectCharacter::EvaluateLightPotency(UPointLightComponent * lightComp)
 {
 	float LightPotency = 0;
-	float DistanceFromLight = (GetActorLocation() - lightComp->GetOwner()->GetActorLocation()).Size();
+	float DistanceFromLight = (FeetCoordinates - lightComp->GetOwner()->GetActorLocation()).Size();
 	if (lightComp->AttenuationRadius*0.9f > DistanceFromLight)
 	{
 		FHitResult LightHitData;
-		if (!GetWorld()->LineTraceSingleByChannel(LightHitData, GetActorLocation(), lightComp->GetOwner()->GetActorLocation(), ECC_Visibility))
+		if (!GetWorld()->LineTraceSingleByChannel(LightHitData, FeetCoordinates, lightComp->GetOwner()->GetActorLocation(), ECC_Visibility))
 		{
 			//We calculate the light potency, which is stronger if the light is concentrated (small radius, big intensity) and vice versa
 			LightPotency = lightComp->Intensity / lightComp->AttenuationRadius;
 		}
 	}		
 	return LightPotency;
+}
+
+void ADarklightProjectCharacter::ProcessLightStatus()
+{
+	for (auto& light : Lights)
+	{
+		float DistanceFromLight = (GetActorLocation() - light->GetActorLocation()).Size();
+		if (light->GetComponentByClass(USpotLightComponent::StaticClass()))// it is a spot light
+		{
+			USpotLightComponent* LightComp = Cast<USpotLightComponent>(light->GetComponentByClass(USpotLightComponent::StaticClass()));
+			float Potency = EvaluateLightPotency(LightComp);
+			LightExposition += Potency / DistanceFromLight * 100;
+		}
+		else if (light->GetComponentByClass(UPointLightComponent::StaticClass())) // it is a point light
+		{
+			UPointLightComponent* LightComp = Cast<UPointLightComponent>(light->GetComponentByClass(UPointLightComponent::StaticClass()));
+			float Potency = EvaluateLightPotency(LightComp);
+			LightExposition += Potency / DistanceFromLight * 100;
+		}
+	}
 }
 
 

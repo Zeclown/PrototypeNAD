@@ -20,6 +20,4 @@ protected:
 
 public:
 	ADarkWitch();
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
-	ADarklightProjectCharacter* LightCharacter;
 };

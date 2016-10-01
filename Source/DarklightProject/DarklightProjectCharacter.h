@@ -20,24 +20,33 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override ;
 	float EvaluateLightPotency(USpotLightComponent* lightComp);
 	float EvaluateLightPotency(UPointLightComponent* lightComp);
+	void ProcessLightStatus();
 	// End of APawn interface
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = PlayerShadowState)
-		TArray<AActor*> Lights;
+	TArray<AActor*> Lights;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PlayerState")
-		float Health;
+	float Health;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PlayerState")
-		float MaxHealth;
+	float MaxHealth;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PlayerState")
-		float KillingRatio;
+	float KillingRatio;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
-		float MaxMovementDepth;
+	float MaxMovementDepth;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PlayerState")
 	float CurrentSlow;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PlayerState")
+	float LightExposition;
+	float InitialWalkSpeed;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PlayerState")
+	FVector FeetCoordinates;
 	/**Tick event called by the blueprint */
 	void Tick(float deltaTime);
 
 
 public:
 	ADarklightProjectCharacter();
+	virtual void PostInitProperties();
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent);
 	virtual void BeginPlay();
 	/** Returns SideViewCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetSideViewCameraComponent() const { return SideViewCameraComponent; }
@@ -48,14 +57,11 @@ public:
 	/** Called for side to side input */
 	void MoveRight(float Val);
 	/**Is the character standing in the shadow? Modified in the tick function */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = PlayerShadowState)
-		bool bIsInShadows;
-	/**Is the character standing in the shadow? Modified in the tick function */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = PlayerShadowState)
-		float SlowRatio;
-	/**Is the character standing in the shadow? Modified in the tick function */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = PlayerShadowState)
-		float MaxSlow;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PlayerState")
+	bool bIsInShadows;
+	/**Max slow that can be applied to the character*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PlayerState", meta = (UIMin = 0.0, UIMax = 1.0, ClampMax=1.0,ClampMin=0.0))
+	float MaxSlow;
 
 
 
