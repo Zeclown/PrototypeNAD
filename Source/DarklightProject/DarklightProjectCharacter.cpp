@@ -51,9 +51,9 @@ void ADarklightProjectCharacter::BeginPlay()
 	for (TObjectIterator<ULightComponent> Itr; Itr; ++Itr)
 	{
 		// Filter out objects not contained in the target world.
-		if (Itr->GetWorld() != GetWorld())
+		if (Itr->GetWorld() == GetWorld())
 		{
-			if (Itr->GetOwner() && Itr->GetOwner()->ActorHasTag("KillingLight"))
+			if (Itr->GetOwner()->ActorHasTag("KillingLight"))
 			{
 				Lights.Add(Itr->GetOwner());
 				UE_LOG(LogTemp, Warning, TEXT("Adding as damaging light Actor:%s"), *Itr->GetOwner()->GetName());
