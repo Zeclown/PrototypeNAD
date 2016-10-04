@@ -30,8 +30,8 @@ protected:
 	float MaxHealth;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PlayerState")
 	float KillingRatio;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
-	float MaxMovementDepth;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PlayerState")
+	bool bIsGrabbing;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PlayerState")
 	float CurrentSlow;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PlayerState")
