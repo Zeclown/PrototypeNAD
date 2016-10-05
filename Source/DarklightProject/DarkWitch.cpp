@@ -11,14 +11,14 @@ ADarkWitch::ADarkWitch()
 void ADarkWitch::SetupPlayerInputComponent(UInputComponent * InputComponent)
 {
 
-	//////////////////////////////////////////////////////////////////////////
-	// Input
-	// Set up gameplay key bindings
-	/////////////////////////////////////////////////////////////////////////
-	InputComponent->BindAction("JumpShadow", IE_Pressed, this, &ACharacter::Jump);
-	InputComponent->BindAction("JumpShadow", IE_Released, this, &ACharacter::StopJumping);
-	InputComponent->BindAxis("MoveRightShadow", this, &ADarklightProjectCharacter::MoveRight);
-	InputComponent->BindAxis("MoveForwardShadow", this, &ADarklightProjectCharacter::MoveForward);
+	////////////////////////////////////////////////////////////////////////////
+	//// Input
+	//// Set up gameplay key bindings
+	///////////////////////////////////////////////////////////////////////////
+	//InputComponent->BindAction("JumpShadow", IE_Pressed, this, &ACharacter::Jump);
+	//InputComponent->BindAction("JumpShadow", IE_Released, this, &ACharacter::StopJumping);
+	//InputComponent->BindAxis("MoveRightShadow", this, &ADarklightProjectCharacter::MoveRight);
+	//InputComponent->BindAxis("MoveForwardShadow", this, &ADarklightProjectCharacter::MoveForward);
 
 }
 

@@ -32,6 +32,8 @@ protected:
 	float KillingRatio;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PlayerState")
 	bool bIsGrabbing;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PlayerState")
+	float GrabbingRange;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PlayerState")
 	float CurrentSlow;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PlayerState")

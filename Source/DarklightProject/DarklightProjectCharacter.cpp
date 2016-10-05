@@ -22,6 +22,7 @@ ADarklightProjectCharacter::ADarklightProjectCharacter()
 	GetCharacterMovement()->MaxFlySpeed = 600.f;
 	MaxHealth = 100;
 	CurrentSlow = 0;
+	GrabbingRange = 100;
 	MaxSlow = 0.1f;
 	bIsInShadows = false;
 	PrimaryActorTick.bCanEverTick = true;
